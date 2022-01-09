@@ -9,9 +9,5 @@ namespace Infrastructure.Persistence
     {
         public DatabaseContext(DbContextOptions<DatabaseContext> options)
             : base(options) { }
-
-        public ChangeTracker GetChangeTracker() => ChangeTracker;
-
-        public DatabaseFacade GetDatabase() => Database;
     }
 }

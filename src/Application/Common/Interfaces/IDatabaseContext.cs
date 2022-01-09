@@ -5,7 +5,7 @@ namespace Application.Common.Interfaces
 {
     public interface IDatabaseContext
     {
-        DatabaseFacade GetDatabase();
-        ChangeTracker GetChangeTracker();
+        public DatabaseFacade Database { get; }
+        public ChangeTracker ChangeTracker { get; }
     }
 }
