@@ -11,15 +11,17 @@ namespace Infrastructure
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
             var defaultDatabaseConnection = configuration.GetConnectionString("DefaultConnection");
-            services.AddDbContext<DatabaseContext>
-            (
-                options =>
-                    options.UseSqlServer
-                    (
-                        defaultDatabaseConnection,
-                        b => b.MigrationsAssembly(typeof(DatabaseContext).Assembly.FullName)
-                    )
-            );
+            services.AddPooledDbContextFactory<DatabaseContext>
+			(
+				builder =>
+				{
+					builder.UseSqlServer
+					(
+						defaultDatabaseConnection, b =>
+							b.MigrationsAssembly(typeof(DatabaseContext).Assembly.FullName)
+					);
+				}
+			);
 
             services.AddScoped<IDatabaseContext, DatabaseContext>();
 
