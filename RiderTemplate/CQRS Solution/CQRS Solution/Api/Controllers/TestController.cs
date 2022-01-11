@@ -26,7 +26,7 @@ namespace Api.Controllers
         }
 
         [HttpPost("publish")]
-        public IActionResult Post([FromBody] ExampleNotification notify)
+        public IActionResult Post(ExampleNotification notify)
         {
             Mediator.Publish(notify);
 
