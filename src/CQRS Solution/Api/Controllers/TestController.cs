@@ -4,11 +4,21 @@ using Application.Example.Streams;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Application.Common.Interfaces;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Api.Controllers
 {
     public class ExampleController : ApiController
     {
+        private readonly IDatabaseContext _context;
+
+        public ExampleController(IDatabaseContext context)
+        {
+            _context = context;
+        }
+        
         [HttpPost("ok")]
         public async Task<IActionResult> GetOkMessage(OkQuery request)
         {
@@ -29,6 +39,14 @@ namespace Api.Controllers
         public IActionResult Post([FromBody] ExampleNotification notify)
         {
             Mediator.Publish(notify);
+
+            return Ok();
+        }
+
+        [HttpPost("test")]
+        public IActionResult test()
+        {
+            _context.Database.CanConnect();
 
             return Ok();
         }

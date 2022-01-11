@@ -23,7 +23,10 @@ namespace Infrastructure
 				}
 			);
 
-            services.AddScoped<IDatabaseContext, DatabaseContext>();
+            services.AddScoped<IDatabaseContext, DatabaseContext>
+            (
+	            s => s.GetService<IDbContextFactory<DatabaseContext>>().CreateDbContext()
+            );
 
             return services;
         }
