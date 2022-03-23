@@ -1,5 +1,6 @@
 using Application.Common.Interfaces;
 using Infrastructure.Persistence;
+using Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,10 +24,7 @@ namespace Infrastructure
 				}
 			);
 
-            services.AddScoped<IDatabaseContext, DatabaseContext>
-            (
-	            s => s.GetService<IDbContextFactory<DatabaseContext>>().CreateDbContext()
-            );
+            services.AddScoped<IContextPooledFactory, ContextPooledFactory>();
 
             return services;
         }

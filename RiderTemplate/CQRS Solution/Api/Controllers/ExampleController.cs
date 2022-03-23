@@ -4,11 +4,16 @@ using Application.Example.Streams;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Application.Common.Interfaces;
+using MediatR;
 
 namespace Api.Controllers
 {
     public class ExampleController : ApiController
     {
+        public ExampleController(IMediator mediator)
+            : base(mediator) { }
+        
         [HttpPost("ok")]
         public async Task<IActionResult> GetOkMessage(OkQuery request)
         {

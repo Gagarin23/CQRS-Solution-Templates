@@ -10,7 +10,7 @@ namespace Application.Example.Notifications
         public async Task Handle(ExampleNotification notification, CancellationToken cancellationToken)
         {
             await Task.Delay(100, cancellationToken);
-            Console.WriteLine("Привет! Это первый обработчик!");
+            Console.WriteLine("Good afternoon sir or lady. This is the number one handler.");
         }
     }
 }
