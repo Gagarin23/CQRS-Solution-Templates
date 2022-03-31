@@ -9,6 +9,10 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using System;
 using System.IO;
+using System.Reflection;
+using Application.Common.Interfaces;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 
 namespace Api
 {
@@ -25,6 +29,8 @@ namespace Api
 
             var app = builder.Build();
             ConfigureApplication(app);
+
+            //MigrateDatabase(app);
 
             app.Run();
         }
@@ -93,7 +99,19 @@ namespace Api
             );
 
             services.AddEndpointsApiExplorer();
-            services.AddSwaggerGen();
+            services.AddSwaggerGen(
+                options =>
+                {
+                    options.SwaggerDoc("v1", new OpenApiInfo
+                    {
+                        Version = "v1",
+                        Title = "API",
+                        Description = "An ASP.NET Core Web API",
+                    });
+                    
+                    var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                    options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
+                });
 
             services.AddOptions();
         }
@@ -116,6 +134,20 @@ namespace Api
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+        }
+        
+        private static void MigrateDatabase(WebApplication app)
+        {
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+
+                var factory = services.GetRequiredService<IContextPooledFactory>();
+
+                var context = factory.CreateContext();
+
+                context.Database.Migrate();
+            }
         }
     }
 }
