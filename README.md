@@ -16,6 +16,8 @@ This repo is ASP.NET templates by Clean Architecture And CQRS Pattern (The Comma
 - Microsoft.EntityFrameworkCore.Tools
 - Microsoft.EntityFrameworkCore.Design
 - Swashbuckle.AspNetCore
+- NewId
+- Mapster
 
 # INSTALL
 
