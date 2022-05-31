@@ -16,4 +16,8 @@
         <Folder Include="Interfaces\"/>
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="NewId" Version="3.0.3" />
+    </ItemGroup>
+
 </Project>

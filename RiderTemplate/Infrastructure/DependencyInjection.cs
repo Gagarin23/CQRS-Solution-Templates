@@ -25,6 +25,7 @@ namespace Infrastructure
 			);
 
             services.AddScoped<IContextPooledFactory, ContextPooledFactory>();
+            services.AddScoped<IDatabaseContext>(provider => provider.GetRequiredService<IContextPooledFactory>().CreateContext());
 
             return services;
         }
