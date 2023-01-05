@@ -1,6 +1,6 @@
 {
   "author": "Belov Ilya",
-  "name": "Clean Architecture + CQRS Solution",
+  "name": "ASP.NET Solution",
   "description": "ASP.NET Clean Architecture + CQRS Solution with MediatR.",
   "identity": "BelovIlya.CQRSSolution.7.0",
   "shortName": "cqrssolution",
