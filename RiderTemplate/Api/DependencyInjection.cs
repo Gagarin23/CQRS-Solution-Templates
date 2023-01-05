@@ -1,3 +1,4 @@
+using Application.Common.Options;
 using Microsoft.Extensions.DependencyInjection;
 using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
 
@@ -7,7 +8,7 @@ namespace Api
     {
         public static IServiceCollection ConfigureSettings(this IServiceCollection services, IConfiguration configuration)
         {
-            // example: services.Configure<AppSettings>(configuration.GetSection(nameof(AppSettings)));
+            services.Configure<ApplicationOptions>(configuration.GetSection(nameof(ApplicationOptions)));
 
             return services;
         }

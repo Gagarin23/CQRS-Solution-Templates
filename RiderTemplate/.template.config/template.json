@@ -1,9 +1,9 @@
 {
   "author": "Belov Ilya",
-  "name": "CQRS Solution",
-  "description": "Just asp.net CQRS Solution with MediatR.",
-  "identity": "BelovIlya.CQRSSolution.1.0",
-  "shortName": "sqrssolution",
+  "name": "Clean Architecture + CQRS Solution",
+  "description": "ASP.NET Clean Architecture + CQRS Solution with MediatR.",
+  "identity": "BelovIlya.CQRSSolution.7.0",
+  "shortName": "cqrssolution",
   "tags": {
     "language": "C#",
     "type": "project"
@@ -16,10 +16,10 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "net6.0"
+          "choice": "net7.0"
         }
       ],
-      "defaultValue": "net6.0"
+      "defaultValue": "net7.0"
     }
   }
 }

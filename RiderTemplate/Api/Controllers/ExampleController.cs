@@ -25,7 +25,7 @@ namespace Api.Controllers
         /// <returns>Message</returns>
         /// <response code="200">Returns message</response>
         /// <response code="400">If the item is null</response>
-        [HttpPost("ok")]
+        [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetOkMessage(OkQuery request)
@@ -42,7 +42,7 @@ namespace Api.Controllers
         /// <returns>Stream</returns>
         /// <response code="200">Returns stream</response>
         /// <response code="400">If the item is null</response>
-        [HttpPost("stream")]
+        [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IAsyncEnumerable<int> GetIntStream(StreamQuery request)
@@ -58,7 +58,7 @@ namespace Api.Controllers
         /// <param name="notify">Empty command</param>
         /// <returns></returns>
         /// <response code="200">Always ok. Publishing asynchronous</response>
-        [HttpPost("publish")]
+        [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public IActionResult Publish(ExampleNotification notify)
         {

@@ -10,6 +10,7 @@ using Serilog;
 using System;
 using System.IO;
 using System.Reflection;
+using System.Text.Json.Serialization;
 using Application.Common.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -47,7 +48,7 @@ namespace Api
                 )
                 .AddJsonFile
                 (
-                    $"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json",
+                    $"appsettings.{EnvironmentExtension.CurrentEnvironment}.json",
                     optional: true,
                     reloadOnChange: true
                 )
@@ -68,35 +69,28 @@ namespace Api
         private static void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers
-            (
-                options =>
-                    options.Filters.Add(new ApiExceptionFilter())
-            );
-
-            services.AddControllers();
+                (
+                    options =>
+                        options.Filters.Add(new ApiExceptionFilter())
+                )
+                .AddJsonOptions
+                (
+                    options =>
+                    {
+                        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+                        options.JsonSerializerOptions.WriteIndented = true;
+                        options.JsonSerializerOptions.TypeInfoResolver = new ExampleEntityConstructorResolver();
+                        options.JsonSerializerOptions.IncludeFields = true;
+                    }
+                );
 
             services.AddApplication();
 
             services.ConfigureSettings(_configuration);
 
             services.AddInfrastructure(_configuration);
-
-            services.AddCors
-            (
-                options =>
-                {
-                    options.AddPolicy
-                    (
-                        "AllowAll",
-                        builder =>
-                        {
-                            builder.AllowAnyOrigin()
-                                .AllowAnyMethod()
-                                .AllowAnyHeader();
-                        }
-                    );
-                }
-            );
+            
+            services.AddCors();
 
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen(
@@ -125,12 +119,18 @@ namespace Api
                 app.UseSwaggerUI();
             }
 
-            app.UseCors("AllowAll");
+            app.UseCors
+            (
+                builder =>
+                {
+                    builder.AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader();
+                }
+            );
 
             app.UseHttpsRedirection();
-
             app.UseRouting();
-
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
@@ -140,13 +140,10 @@ namespace Api
         {
             using (var scope = app.Services.CreateScope())
             {
-                var services = scope.ServiceProvider;
-
-                var factory = services.GetRequiredService<IContextPooledFactory>();
-
-                var context = factory.CreateContext();
-
-                context.Database.Migrate();
+                scope.ServiceProvider
+                    .GetRequiredService<IPooledDbContextFactory>()
+                    .CreateContext()
+                    .Database.Migrate();
             }
         }
     }

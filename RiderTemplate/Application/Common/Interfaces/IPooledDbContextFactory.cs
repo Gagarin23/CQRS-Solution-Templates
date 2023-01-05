@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Application.Common.Interfaces;
 
-public interface IContextPooledFactory
+public interface IPooledDbContextFactory
 {
     Task<IDatabaseContext> CreateContextAsync(CancellationToken cancellationToken = default);
     IDatabaseContext CreateContext();

@@ -6,22 +6,22 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Services;
 
-public class ContextPooledFactory : IContextPooledFactory
+public class PooledDbContextFactory : IPooledDbContextFactory
 {
-    private readonly IDbContextFactory<DatabaseContext> _pooledFactory;
+    private readonly IDbContextFactory<DatabaseContext> _factory;
 
-    public ContextPooledFactory(IDbContextFactory<DatabaseContext> pooledFactory)
+    public PooledDbContextFactory(IDbContextFactory<DatabaseContext> factory)
     {
-        _pooledFactory = pooledFactory;
+        _factory = factory;
     }
     
     public async Task<IDatabaseContext> CreateContextAsync(CancellationToken cancellationToken = default)
     {
-        return await _pooledFactory.CreateDbContextAsync(cancellationToken);
+        return await _factory.CreateDbContextAsync(cancellationToken);
     }
 
     public IDatabaseContext CreateContext()
     {
-        return _pooledFactory.CreateDbContext();
+        return _factory.CreateDbContext();
     }
 }
