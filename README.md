@@ -1,6 +1,6 @@
 # About
 
-This repo is ASP.NET templates by Clean Architecture And CQRS Pattern (The Command and Query Responsibility Segregation) for Visual Studio and Rider. Templates configured to run on .net6.
+This repo is ASP.NET templates by Clean Architecture And CQRS Pattern (The Command and Query Responsibility Segregation) for Visual Studio and Rider. Templates configured to run on .net7.
 
 # Nuget packages
 - MediatR.Extensions.Microsoft.DependencyInjection
@@ -24,7 +24,6 @@ This repo is ASP.NET templates by Clean Architecture And CQRS Pattern (The Comma
 #### Visual Studio
 Copy zip from "VisualStudioTemplate" to ..\%UserProfileFolder%\Documents\Visual Studio {version}\Templates\ProjectTemplates
 If Visual Studio is open, you shoud reopen it.
-![This is an image](https://i.ibb.co/b5LMt2M/Screenshot-4.png)
 
 
 #### Rider
