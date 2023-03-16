@@ -17,7 +17,7 @@ namespace Api.Controllers
         /// <inheritdoc />
         public ExampleController(IMediator mediator)
             : base(mediator) { }
-        
+
         /// <summary>
         /// Send and get message
         /// </summary>

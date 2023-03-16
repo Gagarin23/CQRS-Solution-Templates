@@ -12,10 +12,18 @@ namespace Application
         {
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
-            services.AddMediatR(Assembly.GetExecutingAssembly());
-
-            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(UnhandledExceptionBehaviour<,>));
-            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+            ValidatorOptions.Global.DefaultClassLevelCascadeMode = CascadeMode.Continue;
+            ValidatorOptions.Global.DefaultRuleLevelCascadeMode = CascadeMode.Stop;
+            
+            services.AddMediatR(
+                configuration =>
+                {
+                    configuration.Lifetime = ServiceLifetime.Transient;
+                    configuration.AddBehavior(typeof(IPipelineBehavior<,>), typeof(UnhandledExceptionBehaviour<,>));
+                    configuration.AddBehavior(typeof(IPipelineBehavior<,>), typeof(InputValidationBehavior<,>));
+                    configuration.AddBehavior(typeof(IPipelineBehavior<,>), typeof(BusinessValidationBehavior<,>));
+                    configuration.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
+                });
 
             return services;
         }

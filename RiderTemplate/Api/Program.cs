@@ -11,13 +11,12 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Text.Json.Serialization;
-using Application.Common.Interfaces;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Serilog.Events;
 
 namespace Api
 {
-    public class Program
+    public static class Program
     {
         private static ConfigurationManager _configuration;
 
@@ -25,13 +24,11 @@ namespace Api
         {
             var builder = WebApplication.CreateBuilder(args);
             BuildConfiguration(builder.Configuration);
-            //CreateLogger(builder.Logging);
+            CreateLogger(builder.Logging);
             ConfigureServices(builder.Services);
 
             var app = builder.Build();
             ConfigureApplication(app);
-
-            //MigrateDatabase(app);
 
             app.Run();
         }
@@ -60,7 +57,11 @@ namespace Api
         private static void CreateLogger(ILoggingBuilder loggingBuilder)
         {
             var logger = new LoggerConfiguration()
-                .ReadFrom.Configuration(_configuration)
+                .MinimumLevel.Information()
+                .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+                .Enrich.FromLogContext()
+                .WriteTo.Console()
+                .WriteTo.File("Logs/migration.log")
                 .CreateLogger();
 
             loggingBuilder.AddSerilog(logger);
@@ -79,8 +80,6 @@ namespace Api
                     {
                         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
                         options.JsonSerializerOptions.WriteIndented = true;
-                        options.JsonSerializerOptions.TypeInfoResolver = new ExampleEntityConstructorResolver();
-                        options.JsonSerializerOptions.IncludeFields = true;
                     }
                 );
 
@@ -89,23 +88,30 @@ namespace Api
             services.ConfigureSettings(_configuration);
 
             services.AddInfrastructure(_configuration);
-            
+
             services.AddCors();
 
             services.AddEndpointsApiExplorer();
-            services.AddSwaggerGen(
+            
+            services.AddSwaggerGen
+            (
                 options =>
                 {
-                    options.SwaggerDoc("v1", new OpenApiInfo
-                    {
-                        Version = "v1",
-                        Title = "API",
-                        Description = "An ASP.NET Core Web API",
-                    });
-                    
+                    options.SwaggerDoc
+                    (
+                        "v1",
+                        new OpenApiInfo
+                        {
+                            Version = "v1",
+                            Title = "API",
+                            Description = "An ASP.NET Core Web API",
+                        }
+                    );
+
                     var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
-                });
+                }
+            );
 
             services.AddOptions();
         }
@@ -132,19 +138,8 @@ namespace Api
             app.UseHttpsRedirection();
             app.UseRouting();
             app.UseAuthorization();
-
-            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
-        }
-        
-        private static void MigrateDatabase(WebApplication app)
-        {
-            using (var scope = app.Services.CreateScope())
-            {
-                scope.ServiceProvider
-                    .GetRequiredService<IPooledDbContextFactory>()
-                    .CreateContext()
-                    .Database.Migrate();
-            }
+            
+            app.MapControllers();
         }
     }
 }

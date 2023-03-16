@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using System;
 using System.Collections.Generic;
 using System.Security.Authentication;
+using Application.Common.Extensions;
 
 namespace Api.Filters
 {
@@ -16,27 +17,19 @@ namespace Api.Filters
         {
             _exceptionHandlers = new Dictionary<Type, Action<ExceptionContext>>
             {
-                { typeof(ValidationException), HandleValidationException },
+                { typeof(InputValidationException), HandleInputValidationException },
+                { typeof(BusinessValidationException), HandleBusinessValidationException },
                 { typeof(AuthenticationException), HandleAuthenticationException }
             };
         }
 
         public override void OnException(ExceptionContext context)
         {
-            HandleException(context);
-
-            base.OnException(context);
-        }
-
-        private void HandleException(ExceptionContext context)
-        {
             var type = context.Exception.GetType();
 
-            if (_exceptionHandlers.ContainsKey(type))
+            if (_exceptionHandlers.TryGetValue(type, out var handle))
             {
-                _exceptionHandlers[type]
-                    .Invoke(context);
-
+                handle(context);
                 return;
             }
 
@@ -45,29 +38,33 @@ namespace Api.Filters
 
         private void HandleUnknownException(ExceptionContext context)
         {
-            var details = new ProblemDetails()
-            {
-                Status = StatusCodes.Status500InternalServerError,
-                Title = context.Exception.ToString()
-            };
-
-            context.Result = new ObjectResult(details)
-            {
-                StatusCode = StatusCodes.Status500InternalServerError
-            };
+            context.Result = new StatusCodeResult(StatusCodes.Status500InternalServerError);
 
             context.ExceptionHandled = true;
         }
 
-        private void HandleValidationException(ExceptionContext context)
+        private void HandleInputValidationException(ExceptionContext context)
         {
-            var exception = context.Exception as ValidationException;
+            var exception = context.Exception as InputValidationException;
 
-            var details = new ValidationProblemDetails(exception?.Errors);
+            var details = new ValidationProblemDetails(exception.GroupErrorsByProperty());
 
             details.Title = exception?.Message;
 
             context.Result = new BadRequestObjectResult(details);
+
+            context.ExceptionHandled = true;
+        }
+
+        private void HandleBusinessValidationException(ExceptionContext context)
+        {
+            var exception = context.Exception as BusinessValidationException;
+
+            var details = new ValidationProblemDetails(exception.GroupErrorsByProperty());
+
+            details.Title = exception?.Message;
+
+            context.Result = new ConflictObjectResult(details);
 
             context.ExceptionHandled = true;
         }
