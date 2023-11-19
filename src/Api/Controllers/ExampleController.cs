@@ -23,11 +23,8 @@ namespace Api.Controllers
         /// </summary>
         /// <param name="request">Message</param>
         /// <returns>Message</returns>
-        /// <response code="200">Returns message</response>
-        /// <response code="400">If the item is null</response>
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
         public async Task<IActionResult> GetOkMessage(OkQuery request)
         {
             var dto = await Mediator.Send(request);
@@ -40,11 +37,8 @@ namespace Api.Controllers
         /// </summary>
         /// <param name="request">Number of iterations of the cycle</param>
         /// <returns>Stream</returns>
-        /// <response code="200">Returns stream</response>
-        /// <response code="400">If the item is null</response>
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IAsyncEnumerable<int>))]
         public IAsyncEnumerable<int> GetIntStream(StreamQuery request)
         {
             var stream = Mediator.CreateStream(request);

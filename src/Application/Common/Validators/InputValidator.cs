@@ -5,8 +5,11 @@ using FluentValidation;
 
 namespace Application.Common.Validators;
 
-public abstract partial class InputValidator<T> : AbstractValidator<T>
+public abstract partial class InputValidator<T> : AppValidator<T>
 {
+    protected InputValidator(IServiceProvider serviceProvider)
+        : base(serviceProvider) { }
+
     /// <summary>
     /// Поиск любого символа кроме букв юникода и тире
     /// </summary>

@@ -9,9 +9,9 @@ namespace Application.Common.Behaviours
     public class UnhandledExceptionBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
         where TRequest : IRequest<TResponse>
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<UnhandledExceptionBehaviour<TRequest, TResponse>> _logger;
 
-        public UnhandledExceptionBehaviour(ILogger logger)
+        public UnhandledExceptionBehaviour(ILogger<UnhandledExceptionBehaviour<TRequest, TResponse>> logger)
         {
             _logger = logger;
         }

@@ -12,7 +12,7 @@ namespace DatabaseMigrator
                 .MinimumLevel.Information()
                 .Enrich.FromLogContext()
                 .WriteTo.Console()
-                .WriteTo.File("Logs/migration.log")
+                .WriteTo.File("Logs/migration.log", rollingInterval: RollingInterval.Hour)
                 .CreateLogger();
 
             try
@@ -40,6 +40,7 @@ namespace DatabaseMigrator
 
             using (var dbContext = new DatabaseContext(optionsBuilder.Options))
             {
+                dbContext.Database.SetCommandTimeout(int.Parse(Environment.GetEnvironmentVariable("DB_COMMAND_TIMEOUT")));
                 dbContext.Database.Migrate();
             }
         }

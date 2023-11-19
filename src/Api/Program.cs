@@ -1,4 +1,4 @@
-using Api.Filters;
+using System;
 using Application;
 using Infrastructure;
 using Microsoft.AspNetCore.Builder;
@@ -6,13 +6,23 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Serilog;
-using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
-using System.Reflection;
+using System.Text;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
+using Api.Controllers;
+using Api.Filters;
+using Api.Middleware;
+using Api.Telemetry;
+using Asp.Versioning;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Serilog.Events;
 
 namespace Api
 {
@@ -56,32 +66,33 @@ namespace Api
 
         private static void CreateLogger(ILoggingBuilder loggingBuilder)
         {
-            var logger = new LoggerConfiguration()
-                .MinimumLevel.Information()
-                .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-                .Enrich.FromLogContext()
-                .WriteTo.Console()
-                .WriteTo.File("Logs/migration.log")
-                .CreateLogger();
-
-            loggingBuilder.AddSerilog(logger);
+            loggingBuilder.AddConsole();
         }
 
         private static void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers
-                (
-                    options =>
-                        options.Filters.Add(new ApiExceptionFilter())
-                )
-                .AddJsonOptions
-                (
+            services.AddHttpContextAccessor();
+            services.AddControllers(options => options.Filters.Add(typeof(ApiExceptionFilterAttribute)))
+                .AddJsonOptions(
                     options =>
                     {
                         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
                         options.JsonSerializerOptions.WriteIndented = true;
-                    }
-                );
+                        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+                    });
+
+            services.AddApiVersioning(options =>
+            {
+                options.DefaultApiVersion = new ApiVersion(1, 0);
+                options.ReportApiVersions = true;
+                options.AssumeDefaultVersionWhenUnspecified = true;
+                options.ApiVersionReader = new HeaderApiVersionReader("api-version");
+            });
+
+            services.AddAuthorization();
+            services.AddAuthentication("Bearer").AddJwtBearer();
+
+            services.AddTracing(_configuration);
 
             services.AddApplication();
 
@@ -93,25 +104,26 @@ namespace Api
 
             services.AddEndpointsApiExplorer();
             
-            services.AddSwaggerGen
-            (
-                options =>
+            services.AddSwaggerGen(setup =>
+            {
+                setup.SwaggerDoc("v1", new OpenApiInfo()
                 {
-                    options.SwaggerDoc
-                    (
-                        "v1",
-                        new OpenApiInfo
-                        {
-                            Version = "v1",
-                            Title = "API",
-                            Description = "An ASP.NET Core Web API",
-                        }
-                    );
+                    Title = "Project",
+                    Version = "v1"
+                });
 
-                    var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                    options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
-                }
-            );
+                setup.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "Bearer"
+                });
+
+                setup.OperationFilter<AuthorizationHeaderOperationHeader>();
+                setup.OperationFilter<ApiVersionOperationFilter>();
+            });
 
             services.AddOptions();
         }
@@ -123,6 +135,7 @@ namespace Api
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI();
+                app.Use(GetDurationHeaderSetterMiddlewareFunction());
             }
 
             app.UseCors
@@ -137,9 +150,68 @@ namespace Api
 
             app.UseHttpsRedirection();
             app.UseRouting();
+            app.UseAuthentication();
             app.UseAuthorization();
-            
+
+            app.UseMiddleware<RequestBodyBufferingMiddleware>();
+
             app.MapControllers();
+        }
+
+        private static Func<HttpContext, RequestDelegate, Task> GetDurationHeaderSetterMiddlewareFunction()
+        {
+            return async (context, next) =>
+            {
+                var watcher = new Stopwatch();
+                context.Response.OnStarting
+                (
+                    innerWatcher =>
+                    {
+                        context.Response.Headers.Add("X-Response-Time", $"{((Stopwatch)innerWatcher).ElapsedMilliseconds}ms");
+                        return Task.CompletedTask;
+                    },
+                    watcher
+                );
+                watcher.Start();
+                await next(context);
+                watcher.Stop();
+            };
+        }
+
+        private static void AddAuthenticationAndAuthorization(WebApplicationBuilder webApplicationBuilder)
+        {
+            var jwtSection = webApplicationBuilder.Configuration
+                .GetSection("JwtOptions");
+
+            webApplicationBuilder.Services.AddAuthentication
+                (
+                    options =>
+                    {
+                        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                    }
+                )
+                .AddJwtBearer
+                (
+                    JwtBearerDefaults.AuthenticationScheme,
+                    options =>
+                    {
+                        // Используем симетричное шифрование
+                        // Валидируем только издателя и время жизни
+                        // Валидация Audience отключена, т.к. на данный момент лкк является и издателем и единственным потребителем
+                        options.TokenValidationParameters = new TokenValidationParameters
+                        {
+                            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtSection["SecretKey"])),
+                            ValidIssuer = jwtSection["Issuer"],
+                            ValidateAudience = false,
+#if DEBUG
+                            ValidateLifetime = false,
+#else
+                    ValidateLifetime = true,
+#endif
+                        };
+                    }
+                );
         }
     }
 }
