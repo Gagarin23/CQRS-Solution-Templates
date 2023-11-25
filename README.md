@@ -29,8 +29,3 @@ If Visual Studio is open, you shoud reopen it.
 When you create new solution select "More Template", then "Install template", then choose folder "RiderTemplate" from this repo.<br />
 And then press "Reload" button.<br />
 ![This is an image](https://i.ibb.co/dGdH2Xk/Screenshot-3.png)
-
-# Notes
-
-Logger is commented by default in Program.cs:
-//CreateLogger(builder.Logging);
