@@ -19,8 +19,9 @@ namespace Application
                 configuration =>
                 {
                     configuration.Lifetime = ServiceLifetime.Transient;
-                    configuration.AddBehavior(typeof(IPipelineBehavior<,>), typeof(UnhandledExceptionBehaviour<,>));
+                    configuration.AddBehavior(typeof(IPipelineBehavior<,>), typeof(RequestTracingBehavior<,>));
                     configuration.AddBehavior(typeof(IPipelineBehavior<,>), typeof(InputValidationBehavior<,>));
+                    configuration.AddBehavior(typeof(IPipelineBehavior<,>), typeof(PermissionValidationBehavior<,>));
                     configuration.AddBehavior(typeof(IPipelineBehavior<,>), typeof(BusinessValidationBehavior<,>));
                     configuration.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
                 });

@@ -7,8 +7,8 @@ namespace Application.Common.Exceptions;
 
 public class InputValidationException : ValidationException
 {
-    public InputValidationException(string message)
-        : base(message) { }
+    public InputValidationException(string sourceProperty, string message)
+        : base(message, new []{new ValidationFailure(sourceProperty, message)}) { }
 
     public InputValidationException(string message, IEnumerable<ValidationFailure> errors)
         : base(message, errors) { }
@@ -20,5 +20,8 @@ public class InputValidationException : ValidationException
 
     public InputValidationException(IEnumerable<ValidationFailure> errors)
         : base(errors) { }
+
+    public InputValidationException(SerializationInfo info, StreamingContext context)
+        : base(info, context) { }
 }
 
