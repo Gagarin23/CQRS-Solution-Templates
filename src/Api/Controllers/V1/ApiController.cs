@@ -1,12 +1,13 @@
 using Api.Filters;
+using Application.Common.Constants;
 using Asp.Versioning;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Api.Controllers
+namespace Api.Controllers.V1
 {
-    [ApiVersion(1.0)]
+    [ApiVersion(Versions.V1)]
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
     [ApiController]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(SurrogateProblemDetailsResponseTypeForSwaggerDoc))]

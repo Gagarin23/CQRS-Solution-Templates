@@ -10,7 +10,6 @@ namespace Infrastructure.Services
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private string? _username;
-        public Guid RequestId { get; } = Guid.NewGuid();
         public string? Username => _username ??= GetUsernameOrDefault();
 
         public RequestContext(IHttpContextAccessor httpContextAccessor)
@@ -50,7 +49,7 @@ namespace Infrastructure.Services
         {
             if (httpContext == null)
             {
-                throw new NotSupportedException(ExceptionMessages.HttpContextIsMissing);
+                throw new NotSupportedException(ExceptionMessages.HttpContextIsNotSupported);
             }
         }
     }

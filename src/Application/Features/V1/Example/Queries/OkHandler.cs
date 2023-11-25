@@ -1,8 +1,8 @@
-using MediatR;
 using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
 
-namespace Application.Example.Queries
+namespace Application.Features.V1.Example.Queries
 {
     public class OkHandler : IRequestHandler<OkQuery, string>
     {

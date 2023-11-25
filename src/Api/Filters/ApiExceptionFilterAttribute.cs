@@ -9,7 +9,6 @@ using System.Linq;
 using System.Security.Authentication;
 using System.Threading.Tasks;
 using Api.Extensions;
-using Application.Common.Interfaces;
 using Infrastructure;
 using Microsoft.Extensions.Logging;
 
@@ -22,13 +21,13 @@ namespace Api.Filters
 
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<ApiExceptionFilterAttribute> _logger;
-        private readonly IDictionary<Type, Func<ExceptionContext, ValueTask>> _exceptionHandlers;
+        private readonly IDictionary<Type, Func<ExceptionContext, Activity, ValueTask>> _exceptionHandlers;
 
         public ApiExceptionFilterAttribute(IHttpContextAccessor httpContextAccessor, ILogger<ApiExceptionFilterAttribute> logger)
         {
             _httpContextAccessor = httpContextAccessor;
             _logger = logger;
-            _exceptionHandlers = new Dictionary<Type, Func<ExceptionContext, ValueTask>>
+            _exceptionHandlers = new Dictionary<Type, Func<ExceptionContext, Activity, ValueTask>>
             {
                 { typeof(InputValidationException), HandleInputValidationExceptionAsync },
                 { typeof(BusinessValidationException), HandleBusinessValidationExceptionAsync },
@@ -49,7 +48,7 @@ namespace Api.Filters
 
             if (_exceptionHandlers.TryGetValue(type, out var handle))
             {
-                await handle(context);
+                await handle(context, activity);
                 return;
             }
 
@@ -84,6 +83,7 @@ namespace Api.Filters
                     Title = message
                 };
 
+                details.Extensions.Add("incidentId", activity.TraceId.ToString());
                 SetTrace(details, context.Exception);
 
                 context.Result = new ObjectResult(details)
@@ -95,7 +95,7 @@ namespace Api.Filters
             }
         }
 
-        private ValueTask HandleInputValidationExceptionAsync(ExceptionContext context)
+        private ValueTask HandleInputValidationExceptionAsync(ExceptionContext context, Activity activity)
         {
             var exception = context.Exception as InputValidationException;
 
@@ -104,6 +104,7 @@ namespace Api.Filters
                 Title = DefaultValidationTitle
             };
 
+            details.Extensions.Add("incidentId", activity.TraceId.ToString());
             details.AddDetailErrors(exception.Errors);
 
             context.Result = new BadRequestObjectResult(details);
@@ -112,7 +113,7 @@ namespace Api.Filters
             return ValueTask.CompletedTask;
         }
 
-        private ValueTask HandleBusinessValidationExceptionAsync(ExceptionContext context)
+        private ValueTask HandleBusinessValidationExceptionAsync(ExceptionContext context, Activity activity)
         {
             var exception = context.Exception as BusinessValidationException;
 
@@ -121,6 +122,7 @@ namespace Api.Filters
                 Title = DefaultValidationTitle
             };
 
+            details.Extensions.Add("incidentId", activity.TraceId.ToString());
             details.AddDetailErrors(exception.Errors);
 
             context.Result = new ConflictObjectResult(details);
@@ -129,7 +131,7 @@ namespace Api.Filters
             return ValueTask.CompletedTask;
         }
 
-        private ValueTask HandleForbiddenValidationExceptionAsync(ExceptionContext context)
+        private ValueTask HandleForbiddenValidationExceptionAsync(ExceptionContext context, Activity activity)
         {
             var exception = context.Exception as ForbiddenValidationException;
 
@@ -143,6 +145,7 @@ namespace Api.Filters
                 Title = exception.Message
             };
 
+            details.Extensions.Add("incidentId", activity.TraceId.ToString());
             details.AddDetailErrors(exception.Errors);
 
             context.Result = new ObjectResult(details) { StatusCode = StatusCodes.Status403Forbidden };
@@ -151,7 +154,7 @@ namespace Api.Filters
             return ValueTask.CompletedTask;
         }
 
-        private ValueTask HandleAuthenticationExceptionAsync(ExceptionContext context)
+        private ValueTask HandleAuthenticationExceptionAsync(ExceptionContext context, Activity activity)
         {
             var details = new ProblemDetails()
             {
@@ -159,6 +162,7 @@ namespace Api.Filters
                 Title = context.Exception.Message
             };
 
+            details.Extensions.Add("incidentId", activity.TraceId.ToString());
             context.Result = new UnauthorizedObjectResult(details);
 
             context.ExceptionHandled = true;

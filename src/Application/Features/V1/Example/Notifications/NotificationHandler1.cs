@@ -1,11 +1,11 @@
-using MediatR;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
 
-namespace Application.Example.Notifications
+namespace Application.Features.V1.Example.Notifications
 {
-    public class NotificationHandler2 : INotificationHandler<ExampleNotification>
+    public class NotificationHandler1 : INotificationHandler<ExampleNotification>
     {
         public async Task Handle(ExampleNotification notification, CancellationToken cancellationToken)
         {

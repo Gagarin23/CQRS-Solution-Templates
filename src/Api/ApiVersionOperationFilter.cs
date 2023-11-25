@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using Asp.Versioning;
+using Application.Common.Constants;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -11,24 +11,13 @@ public class ApiVersionOperationFilter : IOperationFilter
 {
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {
-        var actionMetadata = context.ApiDescription.ActionDescriptor.EndpointMetadata;
         operation.Parameters ??= new List<OpenApiParameter>();
 
-        var apiVersionMetadata = actionMetadata
-            .Any(metadataItem => metadataItem is ApiVersionMetadata);
-        if (apiVersionMetadata)
+        var versionOperation = operation.Parameters.FirstOrDefault(x => x.Name == "version");
+
+        if (versionOperation != null)
         {
-            operation.Parameters.Add(new OpenApiParameter
-            {
-                Name = "API-Version",
-                In = ParameterLocation.Header,
-                Description = "API Version header value",
-                Schema = new OpenApiSchema
-                {
-                    Type = "String",
-                    Default = new OpenApiString("1.0")
-                }
-            });
+            versionOperation.Schema.Default = new OpenApiString(Versions.CurrentVersion);
         }
     }
 }

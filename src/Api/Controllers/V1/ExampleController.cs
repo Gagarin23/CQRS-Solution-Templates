@@ -1,13 +1,13 @@
-using Application.Example.Notifications;
-using Application.Example.Queries;
-using Application.Example.Streams;
-using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Application.Features.V1.Example.Notifications;
+using Application.Features.V1.Example.Queries;
+using Application.Features.V1.Example.Streams;
 using MediatR;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
-namespace Api.Controllers
+namespace Api.Controllers.V1
 {
     /// <summary>
     /// My api
@@ -25,7 +25,7 @@ namespace Api.Controllers
         /// <returns>Message</returns>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
-        public async Task<IActionResult> GetOkMessage(OkQuery request)
+        public async Task<IActionResult> GetOkMessageAsync(OkQuery request)
         {
             var dto = await Mediator.Send(request);
 
@@ -54,9 +54,9 @@ namespace Api.Controllers
         /// <response code="200">Always ok. Publishing asynchronous</response>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult Publish(ExampleNotification notify)
+        public async Task<IActionResult> PublishAsync(ExampleNotification notify)
         {
-            Mediator.Publish(notify);
+            await Mediator.Publish(notify);
 
             return Ok();
         }

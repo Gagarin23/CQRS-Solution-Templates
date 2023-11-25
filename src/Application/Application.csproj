@@ -26,6 +26,7 @@
 
     <ItemGroup>
       <Folder Include="Common\Options\" />
+      <Folder Include="Features\V1\" />
     </ItemGroup>
 
 </Project>

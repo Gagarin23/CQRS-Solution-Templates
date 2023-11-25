@@ -331,7 +331,8 @@ namespace Api.Telemetry
                     (
                         x => x.ReturnType != typeof(void)
                              && !(x.ReturnType.IsGenericType && x.ReturnType.GetGenericTypeDefinition() == typeof(ValueTuple<,>))
-                             && x.Name != "Handle"
+                             && x.GetParameters().All(p => !p.GetType().IsSubclassOf(typeof(Delegate)))
+                             && (!x.ReturnParameter?.GetType().IsSubclassOf(typeof(Delegate)) ?? true)
                     );
 
                 foreach (var method in methods)

@@ -1,10 +1,10 @@
-using MediatR;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
 
-namespace Application.Example.Streams
+namespace Application.Features.V1.Example.Streams
 {
     public class StreamHandler : IStreamRequestHandler<StreamQuery, int>
     {

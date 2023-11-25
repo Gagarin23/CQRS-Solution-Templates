@@ -6,21 +6,17 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using Api.Controllers;
 using Api.Filters;
 using Api.Middleware;
 using Api.Telemetry;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
@@ -71,7 +67,6 @@ namespace Api
 
         private static void ConfigureServices(IServiceCollection services)
         {
-            services.AddHttpContextAccessor();
             services.AddControllers(options => options.Filters.Add(typeof(ApiExceptionFilterAttribute)))
                 .AddJsonOptions(
                     options =>
@@ -81,13 +76,18 @@ namespace Api
                         options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
                     });
 
-            services.AddApiVersioning(options =>
-            {
-                options.DefaultApiVersion = new ApiVersion(1, 0);
-                options.ReportApiVersions = true;
-                options.AssumeDefaultVersionWhenUnspecified = true;
-                options.ApiVersionReader = new HeaderApiVersionReader("api-version");
-            });
+            services.AddApiVersioning
+                (
+                    options =>
+                    {
+                        options.DefaultApiVersion = new ApiVersion(1, 0);
+                        options.ReportApiVersions = true;
+                        options.AssumeDefaultVersionWhenUnspecified = true;
+                        options.ApiVersionReader = new HeaderApiVersionReader("api-version");
+                    }
+                ).AddMvc();
+
+            services.AddHttpContextAccessor();
 
             services.AddAuthorization();
             services.AddAuthentication("Bearer").AddJwtBearer();
@@ -198,7 +198,7 @@ namespace Api
                     {
                         // Используем симетричное шифрование
                         // Валидируем только издателя и время жизни
-                        // Валидация Audience отключена, т.к. на данный момент лкк является и издателем и единственным потребителем
+                        // Валидация Audience отключена, т.к. на данный момент приложение является и издателем и единственным потребителем
                         options.TokenValidationParameters = new TokenValidationParameters
                         {
                             IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtSection["SecretKey"])),
@@ -207,7 +207,7 @@ namespace Api
 #if DEBUG
                             ValidateLifetime = false,
 #else
-                    ValidateLifetime = true,
+                            ValidateLifetime = true,
 #endif
                         };
                     }

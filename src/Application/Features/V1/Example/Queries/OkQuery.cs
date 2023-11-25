@@ -1,6 +1,6 @@
 using MediatR;
 
-namespace Application.Example.Queries
+namespace Application.Features.V1.Example.Queries
 {
     public class OkQuery : IRequest<string>
     {

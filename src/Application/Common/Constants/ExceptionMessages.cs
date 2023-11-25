@@ -2,7 +2,7 @@
 
 public static class ExceptionMessages
 {
-    public const string HttpContextIsMissing = "HttpContext is not supported.";
+    public const string HttpContextIsNotSupported = "HttpContext is not supported.";
 }
 
 public static class ValidationMessages

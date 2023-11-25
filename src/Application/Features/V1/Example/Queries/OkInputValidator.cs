@@ -2,7 +2,7 @@ using System;
 using Application.Common.Validators;
 using FluentValidation;
 
-namespace Application.Example.Queries
+namespace Application.Features.V1.Example.Queries
 {
     public class OkInputValidator : InputValidator<OkQuery>
     {

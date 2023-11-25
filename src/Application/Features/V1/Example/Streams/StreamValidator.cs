@@ -1,6 +1,6 @@
 using FluentValidation;
 
-namespace Application.Example.Streams
+namespace Application.Features.V1.Example.Streams
 {
     public class StreamValidator : AbstractValidator<StreamQuery>
     {
