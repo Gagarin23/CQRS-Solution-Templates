@@ -1,13 +1,12 @@
 # About
 
-This repo is ASP.NET templates by Clean Architecture And CQRS Pattern (The Command and Query Responsibility Segregation) for Visual Studio and Rider. Templates configured to run on .net7.
+This repo is ASP.NET templates by Clean Architecture And CQRS Pattern with OpenTelemtry for Visual Studio and Rider. Templates configured to run on .net8.
 
 # Nuget packages
 - MediatR.Extensions.Microsoft.DependencyInjection
 - FluentValidation
 - FluentValidation.DependencyInjectionExtensions
-- Serilog.AspNetCore
-- Serilog.Sinks.MSSqlServer
+- OpenTelemetry
 - Microsoft.AspNetCore.Http.Features
 - Microsoft.Data.SqlClient
 - Microsoft.EntityFrameworkCore
